@@ -3,7 +3,6 @@ from urllib.parse import urljoin
 import logging
 from collections import defaultdict
 
-from configs import configure_argument_parser
 import requests_cache
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -15,16 +14,27 @@ from configs import configure_argument_parser, configure_logging
 
 
 def whats_new(session):
-    results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'),]
+    results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'), ]
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
     response = get_response(session, whats_new_url)
     if response is None:
         return
     session = requests_cache.CachedSession()
     soup = BeautifulSoup(response.text, features='lxml')
-    main_div = find_tag(soup, 'section', attrs={'id': 'what-s-new-in-python'})
-    div_with_ul = find_tag(main_div, 'div', attrs={'class': 'toctree-wrapper'})
-    sections_by_python = div_with_ul.find_all('li', attrs={'class': 'toctree-l1'})
+    main_div = find_tag(
+        soup,
+        'section',
+        attrs={'id': 'what-s-new-in-python'}
+    )
+    div_with_ul = find_tag(
+        main_div,
+        'div',
+        attrs={'class': 'toctree-wrapper'}
+    )
+    sections_by_python = div_with_ul.find_all(
+        'li',
+        attrs={'class': 'toctree-l1'}
+    )
     print(sections_by_python[0].prettify())
 
     for section in tqdm(sections_by_python):
@@ -40,12 +50,11 @@ def whats_new(session):
         results.append(
             (version_link, h1.text, dl_text)
         )
-
     return results
 
 
 def latest_versions(session):
-    results = [('Ссылка на документацию', 'Версия', 'Статус')]
+    results = [('Ссылка на документацию', 'Версия', 'Статус'), ]
     response = get_response(session, MAIN_DOC_URL)
     if response is None:
         return
@@ -63,14 +72,13 @@ def latest_versions(session):
     for a_tag in a_tags:
         link = a_tag['href']
         text_match = re.search(pattern, a_tag.text)
-        if text_match is not None:  
+        if text_match is not None:
             version, status = text_match.groups()
         else:
-            version, status = a_tag.text, ''  
+            version, status = a_tag.text, ''
         results.append(
             (link, version, status)
         )
-
     return results
 
 
@@ -83,7 +91,7 @@ def download(session):
     soup = BeautifulSoup(response.text, 'lxml')
     main_tag = find_tag(soup, 'div', {'role': 'main'})
     table_tag = find_tag(main_tag, 'table', {'class': 'docutils'})
-    pdf_a4_tag = find_tag(table_tag, 'a', {'href': re.compile(r'.+pdf-a4\.zip$')}) 
+    pdf_a4_tag = find_tag(table_tag, 'a', {'href': re.compile(r'.+pdf-a4\.zip$')})
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
@@ -93,7 +101,7 @@ def download(session):
     response = session.get(archive_url)
     with open(archive_path, 'wb') as file:
         file.write(response.content)
-    logging.info(f'Архив был загружен и сохранён: {archive_path}') 
+    logging.info(f'Архив был загружен и сохранён: {archive_path}')
 
 
 def pep(session):
@@ -140,12 +148,6 @@ def pep(session):
     result.append(('Total', len(peps_row)-1))
     return result
 
-
-    for key in count_status_in_card:
-        result.append((key, str(count_status_in_card[key])))
-    result.append(('Total', len(peps_row)-1))
-    return result
-    
 
 MODE_TO_FUNCTION = {
     'whats-new': whats_new,

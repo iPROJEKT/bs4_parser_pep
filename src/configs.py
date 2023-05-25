@@ -21,7 +21,6 @@ def configure_argument_parser(available_modes):
         action='store_true',
         help='Очистка кеша'
     )
-    # Новый аргумент --output вместо аргумента --pretty
     parser.add_argument(
         '-o',
         '--output',
@@ -43,4 +42,4 @@ def configure_logging():
         format=LOG_FORMAT,
         level=logging.INFO,
         handlers=(rotating_handler, logging.StreamHandler())
-    ) 
+    )
