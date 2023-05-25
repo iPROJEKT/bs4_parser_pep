@@ -5,4 +5,4 @@
 * Сделать вирутальное окружение ```python -m venv venv```
 * Акти вироватьт виртуальное окружение ```sourse  venv/Scripts/active```
 * Утсновть зависимости ```pip install -r requirements.txt ```
-* Прописать ```python main.py -h```
+* Прописать ```python main.py -h``` для получения информации о работе парсера
