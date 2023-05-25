@@ -88,10 +88,25 @@ def download(session):
     response = get_response(session, downloads_url)
     if response is None:
         return
-    soup = BeautifulSoup(response.text, 'lxml')
-    main_tag = find_tag(soup, 'div', {'role': 'main'})
-    table_tag = find_tag(main_tag, 'table', {'class': 'docutils'})
-    pdf_a4_tag = find_tag(table_tag, 'a', {'href': re.compile(r'.+pdf-a4\.zip$')})
+    soup = BeautifulSoup(
+        response.text,
+        'lxml'
+    )
+    main_tag = find_tag(
+        soup,
+        'div',
+        {'role': 'main'}
+    )
+    table_tag = find_tag(
+        main_tag,
+        'table',
+        {'class': 'docutils'}
+    )
+    pdf_a4_tag = find_tag(
+        table_tag,
+        'a',
+        {'href': re.compile(r'.+pdf-a4\.zip$')}
+    )
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
@@ -105,6 +120,7 @@ def download(session):
 
 
 def pep(session):
+    session = requests_cache.CachedSession()
     response = get_response(session, PEP_URL)
     if response is None:
         return
@@ -113,7 +129,7 @@ def pep(session):
     pep_row = main_tag.find_all('tr')
     count_status_in_card = defaultdict(int)
     result = [('Статус', 'Количество')]
-    for i in range(1, len(pep_row)):
+    for i in tqdm(range(1, len(pep_row))):
         href_tag = pep_row[i].a['href']
         pep_link = urljoin(PEP_URL, href_tag)
         response = get_response(session, pep_link)
@@ -145,7 +161,7 @@ def pep(session):
                         )
     for key in count_status_in_card:
         result.append((key, str(count_status_in_card[key])))
-    result.append(('Total', len(peps_row)-1))
+    result.append(('Total', len(pep_row)-1))
     return result
 
 
@@ -157,23 +173,17 @@ MODE_TO_FUNCTION = {
 }
 
 
-def main():
+if __name__ == '__main__':
     configure_logging()
     logging.info('Парсер запущен!')
     arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
     args = arg_parser.parse_args()
     logging.info(f'Аргументы командной строки: {args}')
     session = requests_cache.CachedSession()
-
     if args.clear_cache:
         session.cache.clear()
     parser_mode = args.mode
     results = MODE_TO_FUNCTION[parser_mode](session)
-    
-    # Если из функции вернулись какие-то результаты,
     if results is not None:
         control_output(results, args)
-    logging.info('Парсер завершил работу.') 
-
-if __name__ == '__main__':
-    main()
+    logging.info('Парсер завершил работу.')
