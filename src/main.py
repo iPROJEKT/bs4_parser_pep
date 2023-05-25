@@ -173,9 +173,9 @@ MODE_TO_FUNCTION = {
 }
 
 
-if __name__ == '__main__':
-    configure_logging()
-    logging.info('Парсер запущен!')
+def main(): #Здесь я хотел сделать так же как и в алгоритмах
+    configure_logging() # Записать все под условие if __name__ == '__main__':
+    logging.info('Парсер запущен!') # Но логика тестов меня не пропускает
     arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
     args = arg_parser.parse_args()
     logging.info(f'Аргументы командной строки: {args}')
@@ -187,3 +187,6 @@ if __name__ == '__main__':
     if results is not None:
         control_output(results, args)
     logging.info('Парсер завершил работу.')
+
+if __name__ == '__main__':
+    main()
