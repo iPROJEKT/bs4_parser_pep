@@ -173,9 +173,9 @@ MODE_TO_FUNCTION = {
 }
 
 
-def main(): #Здесь я хотел сделать так же как и в алгоритмах
-    configure_logging() # Записать все под условие if __name__ == '__main__':
-    logging.info('Парсер запущен!') # Но логика тестов меня не пропускает
+def main():
+    configure_logging()
+    logging.info('Парсер запущен!')
     arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
     args = arg_parser.parse_args()
     logging.info(f'Аргументы командной строки: {args}')
@@ -190,3 +190,8 @@ def main(): #Здесь я хотел сделать так же как и в а
 
 if __name__ == '__main__':
     main()
+
+
+# Но логика тестов меня не пропускает
+# Записать все под условие if __name__ == '__main__':
+# Здесь я хотел сделать так же как и в алгоритмах
