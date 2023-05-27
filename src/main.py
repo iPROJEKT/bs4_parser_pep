@@ -13,16 +13,20 @@ from constants import BASE_DIR, MAIN_DOC_URL, PEP_URL, EXPECTED_STATUS
 from configs import configure_argument_parser, configure_logging
 
 
+def get_request(url):
+    session = requests_cache.CachedSession()
+    response = get_response(session, url)
+    if response is None:
+        return
+    soup = BeautifulSoup(response.text, features='lxml')
+    return soup
+
+
 def whats_new(session):
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'), ]
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    response = get_response(session, whats_new_url)
-    if response is None:
-        return
-    session = requests_cache.CachedSession()
-    soup = BeautifulSoup(response.text, features='lxml')
     main_div = find_tag(
-        soup,
+        get_request(whats_new_url),
         'section',
         attrs={'id': 'what-s-new-in-python'}
     )
@@ -40,12 +44,8 @@ def whats_new(session):
     for section in tqdm(sections_by_python):
         version_a_tag = find_tag(section, 'a')
         version_link = urljoin(whats_new_url, version_a_tag['href'])
-        response = get_response(session, version_link)
-        if response is None:
-            continue
-        soup = BeautifulSoup(response.text, 'lxml')
-        h1 = find_tag(soup, 'h1')
-        dl = find_tag(soup, 'dl')
+        h1 = find_tag(get_request(version_link), 'h1')
+        dl = find_tag(get_request(version_link), 'dl')
         dl_text = dl.text.replace('\n', ' ')
         results.append(
             (version_link, h1.text, dl_text)
@@ -55,11 +55,11 @@ def whats_new(session):
 
 def latest_versions(session):
     results = [('Ссылка на документацию', 'Версия', 'Статус'), ]
-    response = get_response(session, MAIN_DOC_URL)
-    if response is None:
-        return
-    soup = BeautifulSoup(response.text, 'lxml')
-    sidebar = find_tag(soup, 'div', {'class': 'sphinxsidebarwrapper'})
+    sidebar = find_tag(
+        get_request(MAIN_DOC_URL),
+        'div',
+        {'class': 'sphinxsidebarwrapper'}
+    )
     ul_tags = sidebar.find_all('ul')
     for ul in ul_tags:
         if 'All versions' in ul.text:
@@ -120,11 +120,7 @@ def download(session):
 
 
 def pep(session):
-    session = requests_cache.CachedSession()
-    response = get_response(session, PEP_URL)
-    if response is None:
-        return
-    soup = BeautifulSoup(response.text, features='lxml')
+    get_request(PEP_URL)
     main_tag = find_tag(soup, 'section', {'id': 'numerical-index'})
     pep_row = main_tag.find_all('tr')
     count_status_in_card = defaultdict(int)
@@ -132,8 +128,7 @@ def pep(session):
     for i in tqdm(range(1, len(pep_row))):
         href_tag = pep_row[i].a['href']
         pep_link = urljoin(PEP_URL, href_tag)
-        response = get_response(session, pep_link)
-        soup = BeautifulSoup(response.text, 'lxml')
+        get_request(pep_link)
         main_card_tag = find_tag(soup, 'section', {'id': 'pep-content'})
         main_card_dl_tag = find_tag(
             main_card_tag,
