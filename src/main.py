@@ -19,7 +19,11 @@ from constants import (
     DONLOWD_FOLDER
 )
 from configs import configure_argument_parser, configure_logging
-from exceptions import ParserNotFindWersion, ParserFindTagException
+from exceptions import (
+    ParserNotFindWersion,
+    ParserFindTagException,
+    RequestError
+)
 
 def whats_new(session):
     session = requests_cache.CachedSession()
@@ -182,8 +186,9 @@ def main():
             control_output(results, args)
         logging.info('Парсер завершил работу.')
     except(
-        RequestException,
-        ParserFindTagException
+        ParserNotFindWersion,
+        ParserFindTagException,
+        RequestError
     ) as error:
         logging.error(f'Парсер упал с ошибкой {error}')
 
