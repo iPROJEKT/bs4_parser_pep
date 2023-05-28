@@ -4,6 +4,7 @@ import logging
 from collections import defaultdict
 from exceptions import ParserFindTagException
 
+from requests import RequestException
 import requests_cache
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -14,8 +15,7 @@ from constants import BASE_DIR, MAIN_DOC_URL, PEP_URL, EXPECTED_STATUS
 from configs import configure_argument_parser, configure_logging
 
 
-def get_request(url):
-    session = requests_cache.CachedSession()
+def get_request(url, session):
     response = get_response(session, url)
     if response is None:
         return
@@ -24,10 +24,11 @@ def get_request(url):
 
 
 def whats_new(session):
+    session = requests_cache.CachedSession()
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'), ]
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
     main_div = find_tag(
-        get_request(whats_new_url),
+        get_request(whats_new_url, session),
         'section',
         attrs={'id': 'what-s-new-in-python'}
     )
@@ -45,8 +46,8 @@ def whats_new(session):
     for section in tqdm(sections_by_python):
         version_a_tag = find_tag(section, 'a')
         version_link = urljoin(whats_new_url, version_a_tag['href'])
-        h1 = find_tag(get_request(version_link), 'h1')
-        dl = find_tag(get_request(version_link), 'dl')
+        h1 = find_tag(get_request(version_link, False), 'h1')
+        dl = find_tag(get_request(version_link, False), 'dl')
         dl_text = dl.text.replace('\n', ' ')
         results.append(
             (version_link, h1.text, dl_text)
@@ -55,9 +56,10 @@ def whats_new(session):
 
 
 def latest_versions(session):
+    session = requests_cache.CachedSession()
     results = [('Ссылка на документацию', 'Версия', 'Статус'), ]
     sidebar = find_tag(
-        get_request(MAIN_DOC_URL),
+        get_request(MAIN_DOC_URL, session),
         'div',
         {'class': 'sphinxsidebarwrapper'}
     )
@@ -84,17 +86,10 @@ def latest_versions(session):
 
 
 def download(session):
-    downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     session = requests_cache.CachedSession()
-    response = get_response(session, downloads_url)
-    if response is None:
-        return
-    soup = BeautifulSoup(
-        response.text,
-        'lxml'
-    )
+    downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     main_tag = find_tag(
-        soup,
+        get_request(downloads_url, session),
         'div',
         {'role': 'main'}
     )
@@ -121,15 +116,20 @@ def download(session):
 
 
 def pep(session):
-    get_request(PEP_URL)
-    main_tag = find_tag(soup, 'section', {'id': 'numerical-index'})
+    session = requests_cache.CachedSession()
+    main_tag = find_tag(
+        get_request(PEP_URL, session),
+        'section',
+        {'id': 'numerical-index'}
+    )
     pep_row = main_tag.find_all('tr')
     count_status_in_card = defaultdict(int)
-    result = [('Статус', 'Количество')]
-    for i in tqdm(range(1, len(pep_row))):
-        href_tag = pep_row[i].a['href']
-        pep_link = urljoin(PEP_URL, href_tag)
-        get_request(pep_link)
+    result = [('Status', 'Quantity')]
+    for pip in tqdm(range(1, len(pep_row))):
+        href_tag = pep_row[pip].a['href']
+        pep_link = urljoin(PEP_URL, href_tag) 
+        response = get_response(session, pep_link) 
+        soup = BeautifulSoup(response.text, 'lxml') 
         main_card_tag = find_tag(soup, 'section', {'id': 'pep-content'})
         main_card_dl_tag = find_tag(
             main_card_tag,
@@ -144,8 +144,8 @@ def pep(session):
                 count_status_in_card[status] = count_status_in_card.get(
                     status, 0
                 ) + 1
-                if len(pep_row[i].td.text) != 1:
-                    table_status = pep_row[i].td.text[1:]
+                if len(pep_row[pip].td.text) != 1:
+                    table_status = pep_row[pip].td.text[1:]
                     if status[0] != table_status:
                         logging.info(
                             '\n'
