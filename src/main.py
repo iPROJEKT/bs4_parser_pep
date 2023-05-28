@@ -46,8 +46,8 @@ def whats_new(session):
     for section in tqdm(sections_by_python):
         version_a_tag = find_tag(section, 'a')
         version_link = urljoin(whats_new_url, version_a_tag['href'])
-        h1 = find_tag(get_request(version_link, False), 'h1')
-        dl = find_tag(get_request(version_link, False), 'dl')
+        h1 = find_tag(get_request(version_link, session), 'h1')
+        dl = find_tag(get_request(version_link, session), 'dl')
         dl_text = dl.text.replace('\n', ' ')
         results.append(
             (version_link, h1.text, dl_text)
