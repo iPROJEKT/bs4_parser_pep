@@ -1,16 +1,23 @@
-from prettytable import PrettyTable
-import csv
 import datetime as dt
+import csv
+
+from prettytable import PrettyTable
 import logging
 
-from constants import BASE_DIR, DATETIME_FORMAT
+from constants import (
+    BASE_DIR,
+    DATETIME_FORMAT,
+    OUTPUT_PRETTY,
+    OUTPUT_FILE,
+    NAME_FOLDER,
+)
 
 
 def control_output(results, cli_args):
     output = cli_args.output
-    if output == 'pretty':
+    if output == OUTPUT_PRETTY:
         pretty_output(results)
-    elif output == 'file':
+    elif output == OUTPUT_FILE:
         file_output(results, cli_args)
     else:
         default_output(results)
@@ -30,7 +37,7 @@ def pretty_output(results):
 
 
 def file_output(results, cli_args):
-    results_dir = BASE_DIR / 'results'
+    results_dir = BASE_DIR / NAME_FOLDER
     results_dir.mkdir(exist_ok=True)
     parser_mode = cli_args.mode
     now = dt.datetime.now()

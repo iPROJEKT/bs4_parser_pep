@@ -2,6 +2,7 @@ import re
 from urllib.parse import urljoin
 import logging
 from collections import defaultdict
+from exceptions import ParserFindTagException
 
 import requests_cache
 from bs4 import BeautifulSoup
@@ -169,25 +170,26 @@ MODE_TO_FUNCTION = {
 
 
 def main():
-    configure_logging()
     logging.info('Парсер запущен!')
-    arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
-    args = arg_parser.parse_args()
-    logging.info(f'Аргументы командной строки: {args}')
-    session = requests_cache.CachedSession()
-    if args.clear_cache:
-        session.cache.clear()
-    parser_mode = args.mode
-    results = MODE_TO_FUNCTION[parser_mode](session)
-    if results is not None:
-        control_output(results, args)
-    logging.info('Парсер завершил работу.')
+    try:
+        configure_logging()
+        arg_parser = configure_argument_parser(MODE_TO_FUNCTION.keys())
+        args = arg_parser.parse_args()
+        logging.info(f'Аргументы командной строки: {args}')
+        session = requests_cache.CachedSession()
+        if args.clear_cache:
+            session.cache.clear()
+        parser_mode = args.mode
+        results = MODE_TO_FUNCTION[parser_mode](session)
+        if results is not None:
+            control_output(results, args)
+        logging.info('Парсер завершил работу.')
+    except(
+        RequestException,
+        ParserFindTagException
+    ) as error:
+        logging.error(f'Парсер упал с ошибкой {error}')
 
 
 if __name__ == '__main__':
     main()
-
-
-# Но логика тестов меня не пропускает
-# Записать все под условие if __name__ == '__main__':
-# Здесь я хотел сделать так же как и в алгоритмах
