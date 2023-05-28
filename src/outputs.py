@@ -44,7 +44,7 @@ def file_output(results, cli_args):
     now_formatted = now.strftime(DATETIME_FORMAT)
     file_name = f'{parser_mode}_{now_formatted}.csv'
     file_path = results_dir / file_name
-    with open(file_path, 'w', encoding='utf-8') as f:
-        writer = csv.writer(f, dialect='unix')
+    with open(file_path, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f, dialect='excel-tab')
         writer.writerows(results)
     logging.info(f'Файл с результатами был сохранён: {file_path}')
