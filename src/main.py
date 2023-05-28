@@ -127,9 +127,9 @@ def pep(session):
     result = [('Status', 'Quantity')]
     for pip in tqdm(range(1, len(pep_row))):
         href_tag = pep_row[pip].a['href']
-        pep_link = urljoin(PEP_URL, href_tag) 
-        response = get_response(session, pep_link) 
-        soup = BeautifulSoup(response.text, 'lxml') 
+        pep_link = urljoin(PEP_URL, href_tag)
+        response = get_response(session, pep_link)
+        soup = BeautifulSoup(response.text, 'lxml')
         main_card_tag = find_tag(soup, 'section', {'id': 'pep-content'})
         main_card_dl_tag = find_tag(
             main_card_tag,
