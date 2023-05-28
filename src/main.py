@@ -2,9 +2,7 @@ import re
 from urllib.parse import urljoin
 import logging
 from collections import defaultdict
-from exceptions import ParserFindTagException
 
-from requests import RequestException
 import requests_cache
 from bs4 import BeautifulSoup
 from tqdm import tqdm
@@ -24,6 +22,7 @@ from exceptions import (
     ParserFindTagException,
     RequestError
 )
+
 
 def whats_new(session):
     session = requests_cache.CachedSession()
