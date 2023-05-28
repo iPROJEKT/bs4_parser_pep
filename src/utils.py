@@ -1,7 +1,7 @@
-from requests import RequestException
-
 from exceptions import ParserFindTagException
 from bs4 import BeautifulSoup
+
+from exceptions import RequestError
 
 
 def get_response(session, url):
@@ -9,8 +9,8 @@ def get_response(session, url):
         response = session.get(url)
         response.encoding = 'utf-8'
         return response
-    except RequestException:
-        RequestException(
+    except RequestError:
+        RequestError(
             f'Возникла ошибка при загрузке страницы {url}'
         )
 
