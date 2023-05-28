@@ -1,5 +1,3 @@
-import logging
-
 from exceptions import ParserFindTagException
 from requests import RequestException
 
