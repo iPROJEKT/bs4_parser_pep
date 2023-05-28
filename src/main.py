@@ -9,31 +9,22 @@ import requests_cache
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from utils import get_response, find_tag
+from utils import get_response, find_tag, get_request
 from outputs import control_output
 from constants import BASE_DIR, MAIN_DOC_URL, PEP_URL, EXPECTED_STATUS
 from configs import configure_argument_parser, configure_logging
-
-
-def get_request(url, session):
-    response = get_response(session, url)
-    if response is None:
-        return
-    soup = BeautifulSoup(response.text, features='lxml')
-    return soup
-
+from exceptions import ParserNotFindWersion, ParserFindTagException
 
 def whats_new(session):
     session = requests_cache.CachedSession()
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'), ]
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    main_div = find_tag(
-        get_request(whats_new_url, session),
-        'section',
-        attrs={'id': 'what-s-new-in-python'}
-    )
     div_with_ul = find_tag(
-        main_div,
+        find_tag(
+            get_request(whats_new_url, session),
+            'section',
+            attrs={'id': 'what-s-new-in-python'}
+        ),
         'div',
         attrs={'class': 'toctree-wrapper'}
     )
@@ -69,7 +60,9 @@ def latest_versions(session):
             a_tags = ul.find_all('a')
             break
         else:
-            raise Exception('Не найден список c версиями Python')
+            raise ParserNotFindWersion(
+                'Не найден список c версиями Python'
+            )
 
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:
@@ -88,18 +81,16 @@ def latest_versions(session):
 def download(session):
     session = requests_cache.CachedSession()
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
-    main_tag = find_tag(
-        get_request(downloads_url, session),
-        'div',
-        {'role': 'main'}
-    )
-    table_tag = find_tag(
-        main_tag,
-        'table',
-        {'class': 'docutils'}
-    )
     pdf_a4_tag = find_tag(
-        table_tag,
+        find_tag(
+            find_tag(
+                get_request(downloads_url, session),
+                'div',
+                {'role': 'main'}
+            ),
+            'table',
+            {'class': 'docutils'}
+        ),
         'a',
         {'href': re.compile(r'.+pdf-a4\.zip$')}
     )
