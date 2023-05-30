@@ -87,15 +87,7 @@ def download(session):
     session = requests_cache.CachedSession()
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     pdf_a4_tag = find_tag(
-        find_tag(
-            find_tag(
-                get_request(downloads_url, session),
-                'div',
-                {'role': 'main'}
-            ),
-            'table',
-            {'class': 'docutils'}
-        ),
+        get_request(downloads_url, session),
         'a',
         {'href': re.compile(r'.+pdf-a4\.zip$')}
     )
