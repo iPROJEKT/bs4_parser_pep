@@ -45,6 +45,6 @@ def file_output(results, cli_args):
     file_name = f'{parser_mode}_{now_formatted}.csv'
     file_path = results_dir / file_name
     with open(file_path, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.writer(f, dialect='excel-tab')
+        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
         writer.writerows(results)
     logging.info(f'Файл с результатами был сохранён: {file_path}')

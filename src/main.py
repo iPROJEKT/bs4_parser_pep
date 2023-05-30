@@ -14,7 +14,7 @@ from constants import (
     MAIN_DOC_URL,
     PEP_URL,
     EXPECTED_STATUS,
-    DONLOWD_FOLDER
+    DOWNLOAD_FOLDER
 )
 from configs import configure_argument_parser, configure_logging
 from exceptions import (
@@ -29,11 +29,7 @@ def whats_new(session):
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор'), ]
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
     div_with_ul = find_tag(
-        find_tag(
-            get_request(whats_new_url, session),
-            'section',
-            attrs={'id': 'what-s-new-in-python'}
-        ),
+        get_request(whats_new_url, session),
         'div',
         attrs={'class': 'toctree-wrapper'}
     )
@@ -106,7 +102,7 @@ def download(session):
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
-    downloads_dir = BASE_DIR / DONLOWD_FOLDER
+    downloads_dir = BASE_DIR / DOWNLOAD_FOLDER
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)

@@ -18,4 +18,4 @@ EXPECTED_STATUS = {
     'W': ('Withdrawn',),
     '': ('Draft', 'Active'),
 }
-DONLOWD_FOLDER = 'downloads'
+DOWNLOAD_FOLDER = 'downloads'
